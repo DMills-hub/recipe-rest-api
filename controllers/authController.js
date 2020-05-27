@@ -1,8 +1,8 @@
 const pool = require("../util/db");
 const bcrypt = require("bcryptjs");
 const SALT = 12;
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res, next) => {
   const { username, password, confirmPassword } = req.body;
@@ -18,19 +18,25 @@ exports.register = async (req, res, next) => {
       [username]
     );
     if (checkUserExistance.rowCount !== 0) {
-      return res.json({ error: "User already exists" })
+      return res.json({ error: "User already exists" });
     }
     const id = await client.query("SELECT * FROM users;");
     client.release();
     const user = new User(id.rows.length + 1, username, hashedPassword);
     user.save();
-    res.json({success: true, message: "User has been registered!"});
+    res.json({ success: true, message: "User has been registered!" });
   } catch (err) {
-    res.json({error: "Something went wrong... try again?"});
+    res.json({ error: "Something went wrong... try again?" });
   }
 };
 
-
 exports.login = async (req, res, next) => {
-  
-}
+  const { username, password } = req.body;
+  try {
+    const comparePassword = await bcrypt.compare(password, SALT);
+    const attemptLogin = await User.login(username, comparePassword);
+    res.json(attemptLogin);
+  } catch (err) {
+    res.json({ error: "Something went wrong... try again?" });
+  }
+};

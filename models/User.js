@@ -14,6 +14,23 @@ class User {
     );
     client.release();
   }
+
+  static async login(username, password) {
+    const client = pool.connect();
+    const findUser = await client.query(
+      "SELECT * FROM users WHERE username = $1 AND password = $2",
+      [username, password]
+    );
+    if (findUser.rowCount === 1) {
+      return {
+        success: true,
+        message: "User has logged in.",
+      };
+    }
+    return {
+      error: "User credentials incorrect",
+    };
+  }
 }
 
 module.exports = User;
