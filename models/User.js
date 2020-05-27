@@ -18,30 +18,37 @@ class User {
   }
 
   static async login(username, password) {
-    const client = await pool.connect();
-    const findUser = await client.query(
-      "SELECT * FROM users WHERE username = $1 AND password = $2",
-      [username, password]
-    );
-    if (!findUser.rowCount === 1) {
+    try {
+      const client = await pool.connect();
+      const findUser = await client.query(
+        "SELECT username, password FROM users WHERE username = $1",
+        [username]
+      );
+      if (!findUser.rowCount === 1) {
+        return {
+          error: "No user found.",
+        };
+      }
+      const hashedPassword = findUser.rows[0].password;
+      const checkPasswordValidity = await bcrypt.compare(
+        password,
+        hashedPassword
+      );
+      
+      if (!checkPasswordValidity) {
+        return {
+          error: "Password incorrect.",
+        };
+      }
       return {
-        error: "No user found.",
+        success: true,
+        message: "User has logged in.",
       };
-    }
-    const hashedPassword = findUser.rows[0].password;
-    const checkPasswordValidity = await bcrypt.compare(
-      password,
-      hashedPassword
-    );
-    if (!checkPasswordValidity) {
+    } catch (err) {
       return {
-        error: "Password incorrect.",
-      };
+        error: "Something went wrong... try again?"
+      }
     }
-    return {
-      success: true,
-      message: "User has logged in.",
-    };
   }
 }
 
