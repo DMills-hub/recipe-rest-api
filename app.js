@@ -11,9 +11,5 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use('/auth', authRouter);
-app.get('/', (req, res) => {
-  console.log('got here')
-  res.json({hi: "hi"})
-})
 
 app.listen(PORT, "192.168.0.20");
