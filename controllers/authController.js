@@ -2,7 +2,6 @@ const pool = require("../util/db");
 const bcrypt = require("bcryptjs");
 const SALT = 12;
 const User = require("../models/User");
-const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res, next) => {
   const { username, password, confirmPassword } = req.body;
@@ -34,7 +33,6 @@ exports.login = async (req, res, next) => {
   const { username, password } = req.body;
   try {
     const attemptLogin = await User.login(username, password);
-    console.log(attemptLogin);
     res.json(attemptLogin);
   } catch (err) {
     console.log(err);
