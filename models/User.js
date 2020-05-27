@@ -24,30 +24,24 @@ class User {
         "SELECT username, password FROM users WHERE username = $1",
         [username]
       );
-      if (!findUser.rowCount === 1) {
-        return {
-          error: "No user found.",
-        };
-      }
+      if (!findUser.rowCount === 1) return { error: "No user found." };
+
       const hashedPassword = findUser.rows[0].password;
       const checkPasswordValidity = await bcrypt.compare(
         password,
         hashedPassword
       );
-      
-      if (!checkPasswordValidity) {
-        return {
-          error: "Password incorrect.",
-        };
-      }
+
+      if (!checkPasswordValidity) return { error: "Password incorrect." };
+
       return {
         success: true,
         message: "User has logged in.",
       };
     } catch (err) {
       return {
-        error: "Something went wrong... try again?"
-      }
+        error: "Something went wrong... try again?",
+      };
     }
   }
 }
