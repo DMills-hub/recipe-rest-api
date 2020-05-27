@@ -33,10 +33,11 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   const { username, password } = req.body;
   try {
-    const comparePassword = await bcrypt.compare(password, SALT);
-    const attemptLogin = await User.login(username, comparePassword);
+    const attemptLogin = await User.login(username, password);
+    console.log(attemptLogin);
     res.json(attemptLogin);
   } catch (err) {
+    console.log(err);
     res.json({ error: "Something went wrong... try again?" });
   }
 };

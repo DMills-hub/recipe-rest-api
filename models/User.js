@@ -1,4 +1,6 @@
 const pool = require("../util/db");
+const bcrypt = require("bcryptjs");
+
 class User {
   constructor(id, username, password) {
     this.id = id;
@@ -21,14 +23,24 @@ class User {
       "SELECT * FROM users WHERE username = $1 AND password = $2",
       [username, password]
     );
-    if (findUser.rowCount === 1) {
+    if (!findUser.rowCount === 1) {
       return {
-        success: true,
-        message: "User has logged in.",
+        error: "No user found.",
+      };
+    }
+    const hashedPassword = findUser.rows[0].password;
+    const checkPasswordValidity = await bcrypt.compare(
+      password,
+      hashedPassword
+    );
+    if (!checkPasswordValidity) {
+      return {
+        error: "Password incorrect.",
       };
     }
     return {
-      error: "User credentials incorrect",
+      success: true,
+      message: "User has logged in.",
     };
   }
 }
