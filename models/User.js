@@ -18,7 +18,7 @@ class User {
   }
 
   static async login(username, password) {
-    const client = pool.connect();
+    const client = await pool.connect();
     const findUser = await client.query(
       "SELECT * FROM users WHERE username = $1 AND password = $2",
       [username, password]
