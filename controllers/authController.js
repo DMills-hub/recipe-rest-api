@@ -1,6 +1,8 @@
 const pool = require("../util/db");
 const bcrypt = require("bcryptjs");
 const SALT = 12;
+const User = require('../models/User');
+const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res, next) => {
   const { username, password, confirmPassword } = req.body;
@@ -19,10 +21,16 @@ exports.register = async (req, res, next) => {
       return res.json({ error: "User already exists" })
     }
     const id = await client.query("SELECT * FROM users;");
-    await client.query("INSERT INTO users (id, username, password) VALUES ($1, $2, $3)",[id.rows.length + 1, username, hashedPassword])
     client.release();
+    const user = new User(id.rows.length + 1, username, hashedPassword);
+    user.save();
     res.json({success: true, message: "User has been registered!"});
   } catch (err) {
     res.json({error: "Something went wrong... try again?"});
   }
 };
+
+
+exports.login = async (req, res, next) => {
+  
+}
