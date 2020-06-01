@@ -12,7 +12,16 @@ exports.save = async (req, res) => {
       instructions
     );
     const attemptSave = await newRecipe.save();
-    res.json({ attemptSave });
+    res.json(attemptSave);
+  } catch (err) {
+    res.json({ error: "Something went wrong... try again?" });
+  }
+};
+
+exports.getAllRecipes = async (req, res) => {
+  try {
+    const allRecipes = await Recipe.allRecipes();
+    res.json(allRecipes);
   } catch (err) {
     res.json({ error: "Something went wrong... try again?" });
   }

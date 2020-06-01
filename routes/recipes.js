@@ -1,8 +1,10 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const isAuth = require('../middleware/isAuth');
-const recipesController = require('../controllers/recipesController');
+const isAuth = require("../middleware/isAuth");
+const recipesController = require("../controllers/recipesController");
 
-router.post('/save', isAuth, recipesController.save);
+router.post("/save", isAuth, recipesController.save);
+
+router.get("/allRecipes", isAuth, recipesController.getAllRecipes);
 
 module.exports = router;

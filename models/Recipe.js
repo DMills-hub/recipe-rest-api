@@ -11,6 +11,17 @@ class Recipe {
     this.instructions = instructions;
   }
 
+  static async allRecipes() {
+    try {
+      const client = await pool.connect();
+      const results = await client.query("SELECT * FROM recipes");
+      const recipes = results.rows;
+      return { success: true, recipes: recipes };
+    } catch (err) {
+      return { error: "Something went wrong... try again?" };
+    }
+  }
+
   async save() {
     try {
       const client = await pool.connect();
