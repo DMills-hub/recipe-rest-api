@@ -12,20 +12,23 @@ class User {
   }
 
   async save() {
-    const client = await pool.connect();
-    const checkUserExistance = await client.query(
-      "SELECT * FROM users WHERE username = $1",
-      [username]
-    );
-    if (checkUserExistance.rowCount !== 0)
-      return { error: "User already exists" };
-
-    await client.query(
-      "INSERT INTO users (username, password) VALUES ($1, $2)",
-      [this.username, this.password]
-    );
-    client.release();
-    return { success: true, message: "User has been registered!" };
+    try {
+      const client = await pool.connect();
+      const checkUserExistance = await client.query(
+        "SELECT * FROM users WHERE username = $1",
+        [this.username]
+      );
+      if (checkUserExistance.rowCount !== 0)
+        return { error: "User already exists" };
+      await client.query(
+        "INSERT INTO users (username, password) VALUES ($1, $2)",
+        [this.username, this.password]
+      );
+      client.release();
+      return { success: true, message: "User has been registered!" };
+    } catch (err) {
+      return {error: "Something went wrong... try again?"}
+    }
   }
 
   static async login(username, password) {
