@@ -11,19 +11,9 @@ exports.register = async (req, res, next) => {
   }
   try {
     const hashedPassword = await bcrypt.hash(password, SALT);
-    const client = await pool.connect();
-    const checkUserExistance = await client.query(
-      "SELECT * FROM users WHERE username = $1",
-      [username]
-    );
-    if (checkUserExistance.rowCount !== 0) {
-      return res.json({ error: "User already exists" });
-    }
-    const id = await client.query("SELECT * FROM users;");
-    client.release();
-    const user = new User(id.rows.length + 1, username, hashedPassword);
-    user.save();
-    res.json({ success: true, message: "User has been registered!" });
+    const user = new User(null, username, hashedPassword);
+    const result = await user.save();
+    res.json(result);
   } catch (err) {
     res.json({ error: "Something went wrong... try again?" });
   }

@@ -1,7 +1,7 @@
 const pool = require("../util/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 dotenv.config();
 
 class User {
@@ -13,11 +13,19 @@ class User {
 
   async save() {
     const client = await pool.connect();
+    const checkUserExistance = await client.query(
+      "SELECT * FROM users WHERE username = $1",
+      [username]
+    );
+    if (checkUserExistance.rowCount !== 0)
+      return { error: "User already exists" };
+
     await client.query(
-      "INSERT INTO users (id, username, password) VALUES ($1, $2, $3)",
-      [this.id, this.username, this.password]
+      "INSERT INTO users (username, password) VALUES ($1, $2)",
+      [this.username, this.password]
     );
     client.release();
+    return { success: true, message: "User has been registered!" };
   }
 
   static async login(username, password) {
@@ -36,7 +44,10 @@ class User {
       );
 
       if (!checkPasswordValidity) return { error: "Password incorrect." };
-      const token = jwt.sign({userId: findUser.rows[0].id}, process.env.SECRET_KEY);
+      const token = jwt.sign(
+        { userId: findUser.rows[0].id },
+        process.env.SECRET_KEY
+      );
       return {
         success: true,
         message: "User has logged in.",
