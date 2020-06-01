@@ -1,5 +1,5 @@
 const pool = require("../util/db");
-const format = require('pg-format');
+const format = require("pg-format");
 
 class Recipe {
   constructor(id, userId, title, ingredients, imageUri, instructions) {
@@ -14,40 +14,27 @@ class Recipe {
   async save() {
     try {
       const client = await pool.connect();
-      const getAllRecipes = await client.query("SELECT * FROM recipes");
-      const recipe_id = getAllRecipes.rowCount + 1;
-      await client.query(
-        "INSERT INTO recipes (id, user_id, title, image) VALUES ($1, $2, $3, $4);",
-        [recipe_id, this.userId, this.title, this.imageUri]
+      const addRecipe = await client.query(
+        "INSERT INTO recipes (user_id, title, image) VALUES ($1, $2, $3) RETURNING ID;",
+        [this.userId, this.title, this.imageUri]
       );
-      // this.ingredients.forEach(async (ing) => {
-      //   try {
-      //     const allIngredients = await client.query(
-      //       "SELECT * FROM ingredients"
-      //     );
-      //     const newId = allIngredients.rowCount + 1;
-      //     await client.query(
-      //       "INSERT INTO ingredients (id, recipe_id, ingredient) VALUES ($1, $2, $3)",
-      //       [newId, recipe_id, ing.ing]
-      //     );
-      //   } catch (err) {
-      //     return { error: "Had an issue inserting ingredients..." };
-      //   }
-      // });
-      // this.instructions.forEach(async (ins) => {
-      //   try {
-      //     const allInstructions = await client.query(
-      //       "SELECT * FROM instructions"
-      //     );
-      //     const newId = allInstructions.rowCount + 1;
-      //     await client.query(
-      //       "INSERT INTO instructions (id, recipe_id, instruction) VALUES ($1, $2, $3)",
-      //       [newId, recipe_id, ins.instruction]
-      //     );
-      //   } catch (err) {
-      //     return { error: "Had an issue inserting instructions..." };
-      //   }
-      // });
+      const recipe_id = addRecipe.rows[0].id;
+      const newIngredients = this.ingredients.map((_, index) => {
+        return [recipe_id, ...this.ingredients[index]];
+      });
+      const newInstructions = this.instructions.map((_, index) => {
+        return [recipe_id, ...this.instructions[index]];
+      });
+      const ingredientsQuery = format(
+        "INSERT INTO ingredients (recipe_id, ingredient) VALUES %L",
+        newIngredients
+      );
+      const instructionsQuery = format(
+        "INSERT INTO instructions (recipe_id, instruction) VALUES %L",
+        newInstructions
+      );
+      await client.query(ingredientsQuery);
+      await client.query(instructionsQuery);
       client.release();
       return { success: true, message: "Successfully added recipe!" };
     } catch (err) {
