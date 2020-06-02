@@ -2,17 +2,17 @@ const Recipe = require("../models/Recipe");
 
 exports.save = async (req, res) => {
   try {
-    const { title, imageUri, ingredients, instructions, userId } = req.body;
+    const { title, ingredients, instructions, userId, base64 } = req.body;
     const newRecipe = new Recipe(
       null,
       userId,
       title,
       ingredients,
-      imageUri,
+      base64,
       instructions
     );
     const attemptSave = await newRecipe.save();
-    res.json(attemptSave);
+    res.json({ ...attemptSave });
   } catch (err) {
     res.json({ error: "Something went wrong... try again?" });
   }
@@ -21,7 +21,7 @@ exports.save = async (req, res) => {
 exports.getAllRecipes = async (req, res) => {
   try {
     const allRecipes = await Recipe.allRecipes();
-    res.json(allRecipes);
+    res.json({ ...allRecipes });
   } catch (err) {
     res.json({ error: "Something went wrong... try again?" });
   }

@@ -1,13 +1,15 @@
 const pool = require("../util/db");
 const format = require("pg-format");
+const fs = require("fs");
+const { uuid } = require("uuidv4");
 
 class Recipe {
-  constructor(id, userId, title, ingredients, imageUri, instructions) {
+  constructor(id, userId, title, ingredients, image, instructions) {
     this.id = id;
     this.userId = userId;
     this.title = title;
     this.ingredients = ingredients;
-    this.imageUri = imageUri;
+    this.image = image;
     this.instructions = instructions;
   }
 
@@ -25,9 +27,18 @@ class Recipe {
   async save() {
     try {
       const client = await pool.connect();
+      const newImageName = uuid();
+      fs.writeFile(
+        `${__dirname}/../images/${newImageName}.jpeg`,
+        this.image,
+        "base64",
+        (err) => {
+          if (err) console.log(err);
+        }
+      );
       const addRecipe = await client.query(
         "INSERT INTO recipes (user_id, title, image) VALUES ($1, $2, $3) RETURNING ID;",
-        [this.userId, this.title, this.imageUri]
+        [this.userId, this.title, `${newImageName}.jpeg`]
       );
       const recipe_id = addRecipe.rows[0].id;
       const newIngredients = this.ingredients.map((_, index) => {
@@ -49,6 +60,7 @@ class Recipe {
       client.release();
       return { success: true, message: "Successfully added recipe!" };
     } catch (err) {
+      console.log(err);
       return { error: "Something went wrong... try again?" };
     }
   }
