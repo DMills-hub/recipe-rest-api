@@ -33,7 +33,7 @@ class Recipe {
         this.image,
         "base64",
         (err) => {
-          if (err) console.log(err);
+          if (err)  return { error: "Couldn't save your image... try again?" };
         }
       );
       const addRecipe = await client.query(
@@ -60,7 +60,6 @@ class Recipe {
       client.release();
       return { success: true, message: "Successfully added recipe!" };
     } catch (err) {
-      console.log(err);
       return { error: "Something went wrong... try again?" };
     }
   }

@@ -59,7 +59,6 @@ class User {
         userId: findUser.rows[0].id,
       };
     } catch (err) {
-      console.log(err);
       return {
         error: "Something went wrong... try again?",
       };

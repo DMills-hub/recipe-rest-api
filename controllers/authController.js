@@ -25,7 +25,6 @@ exports.login = async (req, res, next) => {
     const attemptLogin = await User.login(username, password);
     res.json(attemptLogin);
   } catch (err) {
-    console.log(err);
     res.json({ error: "Something went wrong... try again?" });
   }
 };
