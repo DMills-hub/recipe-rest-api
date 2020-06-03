@@ -65,10 +65,10 @@ class Recipe {
     }
   }
 
-  static async allRecipes() {
+  static async allRecipes(category) {
     try {
       const client = await pool.connect();
-      const results = await client.query("SELECT * FROM recipes");
+      const results = await client.query("SELECT * FROM recipes WHERE category = $1", [category]);
       client.release();
       const recipes = results.rows;
       return { success: true, recipes: recipes };
@@ -90,7 +90,7 @@ class Recipe {
         }
       );
       const addRecipe = await client.query(
-        "INSERT INTO recipes (user_id, title, image, cookTime, prepTime) VALUES ($1, $2, $3, $4, $5, $6) RETURNING ID;",
+        "INSERT INTO recipes (user_id, title, image, cookTime, prepTime, category) VALUES ($1, $2, $3, $4, $5, $6) RETURNING ID;",
         [
           this.userId,
           this.title,

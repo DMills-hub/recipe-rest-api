@@ -5,7 +5,7 @@ const recipesController = require("../controllers/recipesController");
 
 router.post("/save", isAuth, recipesController.save);
 
-router.get("/allRecipes", isAuth, recipesController.getAllRecipes);
+router.get("/allRecipes/:category", isAuth, recipesController.getAllRecipes);
 
 router.get("/myRecipes/:userId", isAuth, recipesController.getMyRecipes);
 
