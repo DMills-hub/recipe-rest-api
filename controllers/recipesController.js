@@ -2,7 +2,7 @@ const Recipe = require("../models/Recipe");
 
 exports.save = async (req, res) => {
   try {
-    const { title, ingredients, instructions, userId, base64, cookTime, prepTime } = req.body;
+    const { title, ingredients, instructions, userId, base64, cookTime, prepTime, category } = req.body;
     const newRecipe = new Recipe(
       null,
       userId,
@@ -11,7 +11,8 @@ exports.save = async (req, res) => {
       base64,
       instructions,
       cookTime,
-      prepTime
+      prepTime,
+      category
     );
     const attemptSave = await newRecipe.save();
     res.json({ ...attemptSave });

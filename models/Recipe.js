@@ -12,7 +12,8 @@ class Recipe {
     image,
     instructions,
     cookTime,
-    prepTime
+    prepTime,
+    category
   ) {
     this.id = id;
     this.userId = userId;
@@ -22,6 +23,7 @@ class Recipe {
     this.instructions = instructions;
     this.cookTime = cookTime;
     this.prepTime = prepTime;
+    this.category = category;
   }
 
   static async recipeContents(recipeId) {
@@ -88,13 +90,14 @@ class Recipe {
         }
       );
       const addRecipe = await client.query(
-        "INSERT INTO recipes (user_id, title, image, cookTime, prepTime) VALUES ($1, $2, $3, $4, $5) RETURNING ID;",
+        "INSERT INTO recipes (user_id, title, image, cookTime, prepTime) VALUES ($1, $2, $3, $4, $5, $6) RETURNING ID;",
         [
           this.userId,
           this.title,
           `${newImageName}.jpeg`,
           this.cookTime,
           this.prepTime,
+          this.category
         ]
       );
       const recipe_id = addRecipe.rows[0].id;
