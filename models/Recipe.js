@@ -4,13 +4,48 @@ const fs = require("fs");
 const { uuid } = require("uuidv4");
 
 class Recipe {
-  constructor(id, userId, title, ingredients, image, instructions) {
+  constructor(
+    id,
+    userId,
+    title,
+    ingredients,
+    image,
+    instructions,
+    cookTime,
+    prepTime
+  ) {
     this.id = id;
     this.userId = userId;
     this.title = title;
     this.ingredients = ingredients;
     this.image = image;
     this.instructions = instructions;
+    this.cookTime = cookTime;
+    this.prepTime = prepTime;
+  }
+
+  static async recipeContents(recipeId) {
+    try {
+      const client = await pool.connect();
+      const ingredients = await client.query(
+        "SELECT id, ingredient FROM ingredients WHERE recipe_id = $1",
+        [recipeId]
+      );
+      const instructions = await client.query(
+        "SELECT id, instruction FROM instructions WHERE recipe_id = $1",
+        [recipeId]
+      );
+      if (ingredients.rowCount === 0 || instructions.rowCount === 0)
+        return { error: "Couldn't find either ingredients or instructions." };
+      return {
+        success: true,
+        ingredients: ingredients.rows,
+        instructions: instructions.rows,
+      };
+    } catch (err) {
+      console.log(err);
+      return { error: "Something went wrong... try again?" };
+    }
   }
 
   static async myRecipes(userId) {
@@ -20,6 +55,7 @@ class Recipe {
         "SELECT * FROM recipes WHERE user_id = $1;",
         [userId]
       );
+      client.release();
       if (recipes.rowCount === 0) return { error: "No recipes found..." };
       return { success: true, myRecipes: recipes.rows };
     } catch (err) {
@@ -31,6 +67,7 @@ class Recipe {
     try {
       const client = await pool.connect();
       const results = await client.query("SELECT * FROM recipes");
+      client.release();
       const recipes = results.rows;
       return { success: true, recipes: recipes };
     } catch (err) {
@@ -51,8 +88,14 @@ class Recipe {
         }
       );
       const addRecipe = await client.query(
-        "INSERT INTO recipes (user_id, title, image) VALUES ($1, $2, $3) RETURNING ID;",
-        [this.userId, this.title, `${newImageName}.jpeg`]
+        "INSERT INTO recipes (user_id, title, image, cookTime, prepTime) VALUES ($1, $2, $3, $4, $5) RETURNING ID;",
+        [
+          this.userId,
+          this.title,
+          `${newImageName}.jpeg`,
+          this.cookTime,
+          this.prepTime,
+        ]
       );
       const recipe_id = addRecipe.rows[0].id;
       const newIngredients = this.ingredients.map((_, index) => {
@@ -74,6 +117,7 @@ class Recipe {
       client.release();
       return { success: true, message: "Successfully added recipe!" };
     } catch (err) {
+      console.log(err);
       return { error: "Something went wrong... try again?" };
     }
   }

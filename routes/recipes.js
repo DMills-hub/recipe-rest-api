@@ -9,4 +9,6 @@ router.get("/allRecipes", isAuth, recipesController.getAllRecipes);
 
 router.get("/myRecipes/:userId", isAuth, recipesController.getMyRecipes);
 
+router.get("/singleRecipe/:recipeId", isAuth, recipesController.getSingleRecipe);
+
 module.exports = router;
