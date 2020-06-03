@@ -7,4 +7,6 @@ router.post("/save", isAuth, recipesController.save);
 
 router.get("/allRecipes", isAuth, recipesController.getAllRecipes);
 
+router.get("/myRecipes/:userId", isAuth, recipesController.getMyRecipes);
+
 module.exports = router;

@@ -13,6 +13,20 @@ class Recipe {
     this.instructions = instructions;
   }
 
+  static async myRecipes(userId) {
+    try {
+      const client = await pool.connect();
+      const recipes = await client.query(
+        "SELECT * FROM recipes WHERE user_id = $1;",
+        [userId]
+      );
+      if (recipes.rowCount === 0) return { error: "No recipes found..." };
+      return { success: true, myRecipes: recipes.rows };
+    } catch (err) {
+      return { error: "Something went wrong... try again?" };
+    }
+  }
+
   static async allRecipes() {
     try {
       const client = await pool.connect();
@@ -33,7 +47,7 @@ class Recipe {
         this.image,
         "base64",
         (err) => {
-          if (err)  return { error: "Couldn't save your image... try again?" };
+          if (err) return { error: "Couldn't save your image... try again?" };
         }
       );
       const addRecipe = await client.query(

@@ -26,3 +26,13 @@ exports.getAllRecipes = async (req, res) => {
     res.json({ error: "Something went wrong... try again?" });
   }
 };
+
+exports.getMyRecipes = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const myRecipes = await Recipe.myRecipes(userId);
+    res.json(myRecipes);
+  } catch (err) {
+    res.json({ error: "Something went wrong... try again?" });
+  }
+};
