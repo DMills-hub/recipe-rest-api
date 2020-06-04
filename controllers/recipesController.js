@@ -1,4 +1,5 @@
 const Recipe = require("../models/Recipe");
+const { errorMessage } = require("../helpers/errorMessage");
 
 exports.save = async (req, res) => {
   try {
@@ -18,7 +19,7 @@ exports.save = async (req, res) => {
     res.json({ ...attemptSave });
   } catch (err) {
     console.log(err);
-    res.json({ error: "Something went wrong... try again?" });
+    res.json(errorMessage);
   }
 };
 
@@ -28,7 +29,7 @@ exports.getAllRecipes = async (req, res) => {
     const allRecipes = await Recipe.allRecipes(category);
     res.json({ ...allRecipes });
   } catch (err) {
-    res.json({ error: "Something went wrong... try again?" });
+    res.json(errorMessage);
   }
 };
 
@@ -38,16 +39,47 @@ exports.getMyRecipes = async (req, res) => {
     const myRecipes = await Recipe.myRecipes(userId);
     res.json(myRecipes);
   } catch (err) {
-    res.json({ error: "Something went wrong... try again?" });
+    res.json(errorMessage);
   }
 };
 
 exports.getSingleRecipe = async (req, res) => {
   try {
-    const { recipeId } = req.params;
-    const recipeContents = await Recipe.recipeContents(recipeId);
+    const { recipeId, userId } = req.params;
+    const recipeContents = await Recipe.recipeContents(recipeId, userId);
     res.json(recipeContents);
   } catch (err) {
-    console.log(err);
+    res.json(errorMessage);
+  }
+}
+
+
+exports.addFavourite = async (req, res) => {
+  try {
+    const { userId, recipeId } = req.body;
+    const addFavourite = await Recipe.addFavourite(userId, recipeId);
+    res.json(addFavourite);
+  } catch (err) {
+    res.json(errorMessage)
+  }
+}
+
+exports.deleteFavourite = async (req, res) => {
+  try {
+    const { userId, recipeId } = req.body;
+    const deleteFavourite = await Recipe.deleteFavourite(userId, recipeId);
+    res.json(deleteFavourite);
+  } catch (err) {
+    res.json(errorMessage)
+  }
+}
+
+exports.getMyFavourites = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const getMyFavourites = await Recipe.getMyFavourites(userId);
+    res.json(getMyFavourites); 
+  } catch (err) {
+    res.json(errorMessage);
   }
 }

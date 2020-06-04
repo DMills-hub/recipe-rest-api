@@ -2,6 +2,7 @@ const pool = require("../util/db");
 const format = require("pg-format");
 const fs = require("fs");
 const { uuid } = require("uuidv4");
+const { errorMessage } = require("../helpers/errorMessage");
 
 class Recipe {
   constructor(
@@ -26,7 +27,50 @@ class Recipe {
     this.category = category;
   }
 
-  static async recipeContents(recipeId) {
+  static async getMyFavourites(userId) {
+    try {
+      const client = await pool.connect();
+      const myFavourites = await client.query(
+        "SELECT recipes.id, recipes.user_id, recipes.title, recipes.image, recipes.cooktime, recipes.preptime, recipes.category FROM favourites INNER JOIN recipes ON recipes.id = favourites.recipe_id WHERE favourites.user_id = $1;",
+        [userId]
+      );
+      client.release();
+      if (myFavourites.rowCount === 0) return { error: "No favourites found" }
+      return { success: true, myFavourites: myFavourites.rows };
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
+  static async deleteFavourite(userId, recipeId) {
+    try {
+      const client = await pool.connect();
+      await client.query(
+        "DELETE FROM favourites WHERE user_id = $1 AND recipe_id = $2",
+        [userId, recipeId]
+      );
+      client.release();
+      return { success: true, message: "Deleted recipe from your favourites" };
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
+  static async addFavourite(userId, recipeId) {
+    try {
+      const client = await pool.connect();
+      await client.query(
+        "INSERT INTO favourites (user_id, recipe_id) VALUES ($1, $2);",
+        [userId, recipeId]
+      );
+      client.release();
+      return { success: true, message: "Added recipe to your favourites." };
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
+  static async recipeContents(recipeId, userId) {
     try {
       const client = await pool.connect();
       const ingredients = await client.query(
@@ -39,14 +83,22 @@ class Recipe {
       );
       if (ingredients.rowCount === 0 || instructions.rowCount === 0)
         return { error: "Couldn't find either ingredients or instructions." };
+      const isFav = await client.query("SELECT * FROM favourites WHERE user_id = $1 AND recipe_id = $2", [userId, recipeId]);
+      let fav;
+      if (isFav.rowCount === 0) {
+        fav = false;
+      } else {
+        fav = true;
+      }
+      client.release();
       return {
         success: true,
         ingredients: ingredients.rows,
         instructions: instructions.rows,
+        isFav: fav
       };
     } catch (err) {
-      console.log(err);
-      return { error: "Something went wrong... try again?" };
+      return errorMessage;
     }
   }
 
@@ -61,19 +113,22 @@ class Recipe {
       if (recipes.rowCount === 0) return { error: "No recipes found..." };
       return { success: true, myRecipes: recipes.rows };
     } catch (err) {
-      return { error: "Something went wrong... try again?" };
+      errorMessage;
     }
   }
 
   static async allRecipes(category) {
     try {
       const client = await pool.connect();
-      const results = await client.query("SELECT * FROM recipes WHERE category = $1", [category]);
+      const results = await client.query(
+        "SELECT * FROM recipes WHERE category = $1",
+        [category]
+      );
       client.release();
       const recipes = results.rows;
       return { success: true, recipes: recipes };
     } catch (err) {
-      return { error: "Something went wrong... try again?" };
+      return errorMessage;
     }
   }
 
@@ -97,7 +152,7 @@ class Recipe {
           `${newImageName}.jpeg`,
           this.cookTime,
           this.prepTime,
-          this.category
+          this.category,
         ]
       );
       const recipe_id = addRecipe.rows[0].id;
@@ -120,8 +175,7 @@ class Recipe {
       client.release();
       return { success: true, message: "Successfully added recipe!" };
     } catch (err) {
-      console.log(err);
-      return { error: "Something went wrong... try again?" };
+      return errorMessage;
     }
   }
 }

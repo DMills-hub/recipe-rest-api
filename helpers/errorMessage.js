@@ -1,0 +1,1 @@
+exports.errorMessage = { error: "Something went wrong... try again?" };
