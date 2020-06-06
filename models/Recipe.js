@@ -14,7 +14,8 @@ class Recipe {
     instructions,
     cookTime,
     prepTime,
-    category
+    category,
+    publishable
   ) {
     this.id = id;
     this.userId = userId;
@@ -25,6 +26,23 @@ class Recipe {
     this.cookTime = cookTime;
     this.prepTime = prepTime;
     this.category = category;
+    this.publishable = publishable;
+  }
+
+  static async deleteRecipe(recipeId) {
+    try {
+      const client = await pool.connect();
+      const image = await client.query(
+        "DELETE FROM recipes WHERE id = $1 RETURNING image",
+        [recipeId]
+      );
+      fs.unlink(`${__dirname}/../images/${image}`, (err) => {
+        if (err) return { error: "Couldn't delete image... try again?" };
+      });
+      return { success: true, message: "Successfully deleted recipe." };
+    } catch (err) {
+      return errorMessage;
+    }
   }
 
   static async getMyFavourites(userId) {
@@ -35,7 +53,6 @@ class Recipe {
         [userId]
       );
       client.release();
-      if (myFavourites.rowCount === 0) return { error: "No favourites found" }
       return { success: true, myFavourites: myFavourites.rows };
     } catch (err) {
       return errorMessage;
@@ -83,7 +100,10 @@ class Recipe {
       );
       if (ingredients.rowCount === 0 || instructions.rowCount === 0)
         return { error: "Couldn't find either ingredients or instructions." };
-      const isFav = await client.query("SELECT * FROM favourites WHERE user_id = $1 AND recipe_id = $2", [userId, recipeId]);
+      const isFav = await client.query(
+        "SELECT * FROM favourites WHERE user_id = $1 AND recipe_id = $2",
+        [userId, recipeId]
+      );
       let fav;
       if (isFav.rowCount === 0) {
         fav = false;
@@ -95,7 +115,7 @@ class Recipe {
         success: true,
         ingredients: ingredients.rows,
         instructions: instructions.rows,
-        isFav: fav
+        isFav: fav,
       };
     } catch (err) {
       return errorMessage;
@@ -121,7 +141,7 @@ class Recipe {
     try {
       const client = await pool.connect();
       const results = await client.query(
-        "SELECT * FROM recipes WHERE category = $1",
+        "SELECT * FROM recipes WHERE category = $1 AND publishable = TRUE",
         [category]
       );
       client.release();
@@ -145,7 +165,7 @@ class Recipe {
         }
       );
       const addRecipe = await client.query(
-        "INSERT INTO recipes (user_id, title, image, cookTime, prepTime, category) VALUES ($1, $2, $3, $4, $5, $6) RETURNING ID;",
+        "INSERT INTO recipes (user_id, title, image, cookTime, prepTime, category, publishable) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING ID;",
         [
           this.userId,
           this.title,
@@ -153,6 +173,7 @@ class Recipe {
           this.cookTime,
           this.prepTime,
           this.category,
+          this.publishable
         ]
       );
       const recipe_id = addRecipe.rows[0].id;

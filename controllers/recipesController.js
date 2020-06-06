@@ -3,7 +3,17 @@ const { errorMessage } = require("../helpers/errorMessage");
 
 exports.save = async (req, res) => {
   try {
-    const { title, ingredients, instructions, userId, base64, cookTime, prepTime, category } = req.body;
+    const {
+      title,
+      ingredients,
+      instructions,
+      userId,
+      base64,
+      cookTime,
+      prepTime,
+      category,
+      publishable
+    } = req.body;
     const newRecipe = new Recipe(
       null,
       userId,
@@ -13,21 +23,32 @@ exports.save = async (req, res) => {
       instructions,
       cookTime,
       prepTime,
-      category
+      category,
+      publishable
     );
     const attemptSave = await newRecipe.save();
-    res.json({ ...attemptSave });
+    res.json(attemptSave);
   } catch (err) {
     console.log(err);
     res.json(errorMessage);
   }
 };
 
+exports.deleteRecipe = async (req, res) => {
+  try {
+    const { recipeId } = req.body;
+    const deleteRecipe = await Recipe.deleteRecipe(recipeId);
+    res.json(deleteRecipe)
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
+
 exports.getAllRecipes = async (req, res) => {
   try {
     const { category } = req.params;
     const allRecipes = await Recipe.allRecipes(category);
-    res.json({ ...allRecipes });
+    res.json(allRecipes);
   } catch (err) {
     res.json(errorMessage);
   }
@@ -51,8 +72,7 @@ exports.getSingleRecipe = async (req, res) => {
   } catch (err) {
     res.json(errorMessage);
   }
-}
-
+};
 
 exports.addFavourite = async (req, res) => {
   try {
@@ -60,9 +80,9 @@ exports.addFavourite = async (req, res) => {
     const addFavourite = await Recipe.addFavourite(userId, recipeId);
     res.json(addFavourite);
   } catch (err) {
-    res.json(errorMessage)
+    res.json(errorMessage);
   }
-}
+};
 
 exports.deleteFavourite = async (req, res) => {
   try {
@@ -70,16 +90,16 @@ exports.deleteFavourite = async (req, res) => {
     const deleteFavourite = await Recipe.deleteFavourite(userId, recipeId);
     res.json(deleteFavourite);
   } catch (err) {
-    res.json(errorMessage)
+    res.json(errorMessage);
   }
-}
+};
 
 exports.getMyFavourites = async (req, res) => {
   try {
     const { userId } = req.params;
     const getMyFavourites = await Recipe.getMyFavourites(userId);
-    res.json(getMyFavourites); 
+    res.json(getMyFavourites);
   } catch (err) {
     res.json(errorMessage);
   }
-}
+};
