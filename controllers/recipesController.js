@@ -103,3 +103,14 @@ exports.getMyFavourites = async (req, res) => {
     res.json(errorMessage);
   }
 };
+
+
+exports.updateImage = async (req, res) => {
+  try {
+    const { recipeId, base64 } = req.body;
+    const updateImage = await Recipe.updateImage(recipeId, base64);
+    res.json(updateImage);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}

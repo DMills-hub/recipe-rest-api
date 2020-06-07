@@ -29,6 +29,28 @@ class Recipe {
     this.publishable = publishable;
   }
 
+  static async updateImage(recipeId, base64) {
+    try {
+      const client = await pool.connect();
+      const id = uuid();
+      await client.query("UPDATE recipes SET image = $1 WHERE id = $2", [
+        `${id}.jpeg`,
+        recipeId,
+      ]);
+      fs.writeFile(
+        `${__dirname}/../images/${id}.jpeg`,
+        base64,
+        "base64",
+        (err) => {
+          if (err) return { error: "Couldn't save your image... try again?" };
+        }
+      );
+      return { success: true, message: "Image updated." };
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
   static async deleteRecipe(recipeId) {
     try {
       const client = await pool.connect();
@@ -36,9 +58,12 @@ class Recipe {
         "DELETE FROM recipes WHERE id = $1 RETURNING image",
         [recipeId]
       );
-      fs.unlink(`${__dirname}/../images/${image}`, (err) => {
-        if (err) return { error: "Couldn't delete image... try again?" };
-      });
+      if (image !== "") {
+        fs.unlink(`${__dirname}/../images/${image}`, (err) => {
+          if (err) return { error: "Couldn't delete image... try again?" };
+        });
+      }
+      client.release();
       return { success: true, message: "Successfully deleted recipe." };
     } catch (err) {
       return errorMessage;
@@ -156,24 +181,26 @@ class Recipe {
     try {
       const client = await pool.connect();
       const newImageName = uuid();
-      fs.writeFile(
-        `${__dirname}/../images/${newImageName}.jpeg`,
-        this.image,
-        "base64",
-        (err) => {
-          if (err) return { error: "Couldn't save your image... try again?" };
-        }
-      );
+      if (this.image !== null) {
+        fs.writeFile(
+          `${__dirname}/../images/${newImageName}.jpeg`,
+          this.image,
+          "base64",
+          (err) => {
+            if (err) return { error: "Couldn't save your image... try again?" };
+          }
+        );
+      }
       const addRecipe = await client.query(
         "INSERT INTO recipes (user_id, title, image, cookTime, prepTime, category, publishable) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING ID;",
         [
           this.userId,
           this.title,
-          `${newImageName}.jpeg`,
+          this.image ? `${newImageName}.jpeg` : "",
           this.cookTime,
           this.prepTime,
           this.category,
-          this.publishable
+          this.publishable,
         ]
       );
       const recipe_id = addRecipe.rows[0].id;

@@ -19,4 +19,6 @@ router.get("/myFavourites/:userId", isAuth, recipesController.getMyFavourites);
 
 router.post("/deleteRecipe", isAuth, recipesController.deleteRecipe);
 
+router.post("/updateImage", isAuth, recipesController.updateImage);
+
 module.exports = router;
