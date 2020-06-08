@@ -32,9 +32,12 @@ class Recipe {
   static async getReviews(recipeId) {
     try {
       const client = await pool.connect();
-      const reviews = await client.query("SELECT title, review, rating FROM reviews WHERE recipe_id = $1", [recipeId]);
+      const reviews = await client.query(
+        "SELECT reviews.title, reviews.review, reviews.rating, users.username FROM reviews INNER JOIN users ON users.id = reviews.user_id WHERE reviews.recipe_id = $1;",
+        [recipeId]
+      );
       client.release();
-      return { success: true, reviews: reviews.rows }
+      return { success: true, reviews: reviews.rows };
     } catch (err) {
       return errorMessage;
     }
@@ -155,8 +158,14 @@ class Recipe {
         "SELECT * FROM favourites WHERE user_id = $1 AND recipe_id = $2",
         [userId, recipeId]
       );
-      const reviews = await client.query("SELECT * FROM reviews WHERE recipe_id = $1", [recipeId]);
-      const isReviewed = await client.query("SELECT * FROM reviews WHERE recipe_id = $1 AND user_id = $2", [recipeId, userId])
+      const reviews = await client.query(
+        "SELECT * FROM reviews WHERE recipe_id = $1",
+        [recipeId]
+      );
+      const isReviewed = await client.query(
+        "SELECT * FROM reviews WHERE recipe_id = $1 AND user_id = $2",
+        [recipeId, userId]
+      );
       let fav;
       let reviewed;
       if (isFav.rowCount === 0) {
@@ -176,7 +185,7 @@ class Recipe {
         instructions: instructions.rows,
         isFav: fav,
         reviews: reviews.rows,
-        isReviewed: reviewed
+        isReviewed: reviewed,
       };
     } catch (err) {
       return errorMessage;

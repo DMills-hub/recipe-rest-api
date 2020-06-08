@@ -5,9 +5,10 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 class User {
-  constructor(id, username, password) {
+  constructor(id, username, email, password) {
     this.id = id;
     this.username = username;
+    this.email = email;
     this.password = password;
   }
 
@@ -21,8 +22,8 @@ class User {
       if (checkUserExistance.rowCount !== 0)
         return { error: "User already exists" };
       await client.query(
-        "INSERT INTO users (username, password) VALUES ($1, $2)",
-        [this.username, this.password]
+        "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
+        [this.username, this.email, this.password]
       );
       client.release();
       return { success: true, message: "User has been registered!" };
