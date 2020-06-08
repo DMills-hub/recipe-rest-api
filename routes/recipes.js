@@ -21,4 +21,8 @@ router.post("/deleteRecipe", isAuth, recipesController.deleteRecipe);
 
 router.post("/updateImage", isAuth, recipesController.updateImage);
 
+router.post("/addReview", isAuth, recipesController.addReview);
+
+router.get("/reviews/:recipeId", isAuth, recipesController.getReviews);
+
 module.exports = router;

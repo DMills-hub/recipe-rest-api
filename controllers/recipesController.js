@@ -114,3 +114,23 @@ exports.updateImage = async (req, res) => {
     res.json(errorMessage);
   }
 }
+
+exports.addReview = async (req, res) => {
+  try {
+    const { recipeId, review, rating, userId, title } = req.body;
+    const addReview = await Recipe.addReview(recipeId, review, rating, userId, title);
+    res.json(addReview);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
+
+exports.getReviews = async (req, res) => {
+  try {
+    const { recipeId } = req.params;
+    const getReviews = await Recipe.getReviews(recipeId);
+    res.json(getReviews);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}

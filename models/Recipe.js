@@ -29,6 +29,32 @@ class Recipe {
     this.publishable = publishable;
   }
 
+  static async getReviews(recipeId) {
+    try {
+      const client = await pool.connect();
+      const reviews = await client.query("SELECT title, review, rating FROM reviews WHERE recipe_id = $1", [recipeId]);
+      client.release();
+      return { success: true, reviews: reviews.rows }
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
+  static async addReview(recipeId, review, rating, userId, title) {
+    try {
+      const client = await pool.connect();
+      await client.query(
+        "INSERT INTO reviews (review, rating, title, recipe_id, user_id) VALUES ($1, $2, $3, $4, $5)",
+        [review, rating, title, recipeId, userId]
+      );
+      client.release();
+      return { success: true, message: "Successfully added review." };
+    } catch (err) {
+      console.log(err);
+      return errorMessage;
+    }
+  }
+
   static async updateImage(recipeId, base64) {
     try {
       const client = await pool.connect();
@@ -129,11 +155,19 @@ class Recipe {
         "SELECT * FROM favourites WHERE user_id = $1 AND recipe_id = $2",
         [userId, recipeId]
       );
+      const reviews = await client.query("SELECT * FROM reviews WHERE recipe_id = $1", [recipeId]);
+      const isReviewed = await client.query("SELECT * FROM reviews WHERE recipe_id = $1 AND user_id = $2", [recipeId, userId])
       let fav;
+      let reviewed;
       if (isFav.rowCount === 0) {
         fav = false;
       } else {
         fav = true;
+      }
+      if (isReviewed.rowCount === 0) {
+        reviewed = false;
+      } else {
+        reviewed = true;
       }
       client.release();
       return {
@@ -141,6 +175,8 @@ class Recipe {
         ingredients: ingredients.rows,
         instructions: instructions.rows,
         isFav: fav,
+        reviews: reviews.rows,
+        isReviewed: reviewed
       };
     } catch (err) {
       return errorMessage;

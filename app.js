@@ -20,4 +20,4 @@ app.use(express.static(path.join(__dirname, "images")));
 app.use("/auth", authRouter);
 app.use("/recipes", recipesRouter);
 
-app.listen(PORT, "172.20.10.3");
+app.listen(PORT, "192.168.0.20");
