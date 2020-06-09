@@ -254,6 +254,7 @@ class Recipe {
     try {
       const client = await pool.connect();
       const newImageName = uuid();
+      console.log(this.image)
       if (this.image !== null) {
         const fileContent = new Buffer(this.image, "base64");
         const params = {
@@ -264,6 +265,7 @@ class Recipe {
           ContentType: "image/jpeg",
         };
         s3.upload(params, (err) => {
+          console.log(err);
           if (err) return { error: "Sorry couldn't upload image." };
         });
       }
