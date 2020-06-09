@@ -3,6 +3,7 @@ const format = require("pg-format");
 const fs = require("fs");
 const { uuid } = require("uuidv4");
 const { errorMessage } = require("../helpers/errorMessage");
+const path = require('path');
 
 class Recipe {
   constructor(
@@ -228,7 +229,7 @@ class Recipe {
       const newImageName = uuid();
       if (this.image !== null) {
         fs.writeFile(
-          `${__dirname}/../images/${newImageName}.jpeg`,
+          path.join(__dirname, `../images/${newImageName}.jpeg`),
           this.image,
           "base64",
           (err) => {
