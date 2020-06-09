@@ -232,6 +232,7 @@ class Recipe {
           this.image,
           "base64",
           (err) => {
+            console.log(err);
             if (err) return { error: "Couldn't save your image... try again?" };
           }
         );

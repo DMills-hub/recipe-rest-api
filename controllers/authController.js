@@ -14,7 +14,6 @@ exports.register = async (req, res) => {
     const result = await user.save();
     res.json(result);
   } catch (err) {
-    console.log(err);
     res.json(errorMessage);
   }
 };
@@ -25,6 +24,7 @@ exports.login = async (req, res) => {
     const attemptLogin = await User.login(username, password);
     res.json(attemptLogin);
   } catch (err) {
+    console.log(err);
     res.json(errorMessage);
   }
 };
