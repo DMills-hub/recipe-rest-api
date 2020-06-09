@@ -1,6 +1,5 @@
 const express = require("express");
 const app = express();
-const path = require("path");
 const dotenv = require("dotenv");
 const PORT = process.env.PORT || 3000;
 const cors = require("cors");
@@ -19,4 +18,4 @@ app.use(
 app.use("/auth", authRouter);
 app.use("/recipes", recipesRouter);
 
-app.listen(PORT, "192.168.0.20");
+app.listen(PORT);
