@@ -1,9 +1,15 @@
 const pool = require("../util/db");
+const dotenv = require("dotenv");
+dotenv.config();
 const format = require("pg-format");
-const fs = require("fs");
 const { uuid } = require("uuidv4");
 const { errorMessage } = require("../helpers/errorMessage");
-const path = require('path');
+const AWS = require("aws-sdk");
+const s3 = new AWS.S3({
+  accessKeyId: process.env.ACCESS_KEY_ID,
+  secretAccessKey: process.env.SECRET_ACCESS_KEY,
+});
+const BUCKET_NAME = process.env.BUCKET_NAME;
 
 class Recipe {
   constructor(
@@ -54,7 +60,6 @@ class Recipe {
       client.release();
       return { success: true, message: "Successfully added review." };
     } catch (err) {
-      console.log(err);
       return errorMessage;
     }
   }
@@ -63,18 +68,36 @@ class Recipe {
     try {
       const client = await pool.connect();
       const id = uuid();
+      const oldImage = await client.query(
+        "SELECT image FROM recipes WHERE id = $1",
+        [recipeId]
+      );
+      if (oldImage.rowCount !== 0) {
+        const deleteParams = {
+          Bucket: BUCKET_NAME,
+          Key: oldImage.rows[0].image,
+        };
+        s3.deleteObject(deleteParams, (err) => {
+          if (err) return { error: "Couldn't delete image." };
+        });
+      }
       await client.query("UPDATE recipes SET image = $1 WHERE id = $2", [
         `${id}.jpeg`,
         recipeId,
       ]);
-      fs.writeFile(
-        `${__dirname}/../images/${id}.jpeg`,
-        base64,
-        "base64",
-        (err) => {
-          if (err) return { error: "Couldn't save your image... try again?" };
+      const fileContent = new Buffer(base64, "base64");
+      const params = {
+        Bucket: BUCKET_NAME,
+        Key: `${id}.jpeg`,
+        Body: fileContent,
+        ContentEncoding: "base64",
+        ContentType: "image/jpeg",
+      };
+      s3.upload(params, (err) => {
+        if (err) {
+          return err;
         }
-      );
+      });
       return { success: true, message: "Image updated." };
     } catch (err) {
       return errorMessage;
@@ -88,9 +111,13 @@ class Recipe {
         "DELETE FROM recipes WHERE id = $1 RETURNING image",
         [recipeId]
       );
-      if (image !== "") {
-        fs.unlink(`${__dirname}/../images/${image}`, (err) => {
-          if (err) return { error: "Couldn't delete image... try again?" };
+      if (image.rows[0].image !== "") {
+        const deleteParams = {
+          Bucket: BUCKET_NAME,
+          Key: image.rows[0].image,
+        };
+        s3.deleteObject(deleteParams, (err) => {
+          if (err) return { error: "Couldn't delete image." };
         });
       }
       client.release();
@@ -228,15 +255,17 @@ class Recipe {
       const client = await pool.connect();
       const newImageName = uuid();
       if (this.image !== null) {
-        fs.writeFile(
-          path.join(__dirname, `../images/${newImageName}.jpeg`),
-          this.image,
-          "base64",
-          (err) => {
-            console.log(err);
-            if (err) return { error: "Couldn't save your image... try again?" };
-          }
-        );
+        const fileContent = new Buffer(this.image, "base64");
+        const params = {
+          Bucket: BUCKET_NAME,
+          Key: `${newImageName}.jpeg`,
+          Body: fileContent,
+          ContentEncoding: "base64",
+          ContentType: "image/jpeg",
+        };
+        s3.upload(params, (err) => {
+          if (err) return { error: "Sorry couldn't upload image." };
+        });
       }
       const addRecipe = await client.query(
         "INSERT INTO recipes (user_id, title, image, cookTime, prepTime, category, publishable) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING ID;",

@@ -15,9 +15,8 @@ app.use(
     limit: "50mb",
   })
 );
-app.use(express.static(path.join(__dirname, "images")));
 
 app.use("/auth", authRouter);
 app.use("/recipes", recipesRouter);
 
-app.listen(PORT);
+app.listen(PORT, "192.168.0.20");
