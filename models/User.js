@@ -54,6 +54,7 @@ class User {
       client.release();
       return { success: true, message: "User has been registered!" };
     } catch (err) {
+      console.log(err);
       return { error: "Something went wrong... try again?" };
     }
   }
