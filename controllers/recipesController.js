@@ -11,6 +11,7 @@ exports.save = async (req, res) => {
       base64,
       cookTime,
       prepTime,
+      serves,
       category,
       publishable
     } = req.body;
@@ -23,6 +24,7 @@ exports.save = async (req, res) => {
       instructions,
       cookTime,
       prepTime,
+      serves,
       category,
       publishable
     );

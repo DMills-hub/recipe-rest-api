@@ -21,6 +21,7 @@ class Recipe {
     instructions,
     cookTime,
     prepTime,
+    serves,
     category,
     publishable
   ) {
@@ -32,6 +33,7 @@ class Recipe {
     this.instructions = instructions;
     this.cookTime = cookTime;
     this.prepTime = prepTime;
+    this.serves = serves;
     this.category = category;
     this.publishable = publishable;
   }
@@ -268,13 +270,14 @@ class Recipe {
         });
       }
       const addRecipe = await client.query(
-        "INSERT INTO recipes (user_id, title, image, cookTime, prepTime, category, publishable) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING ID;",
+        "INSERT INTO recipes (user_id, title, image, cookTime, prepTime, serving, category, publishable) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING ID;",
         [
           this.userId,
           this.title,
           this.image ? `${newImageName}.jpeg` : "",
           this.cookTime,
           this.prepTime,
+          this.serves,
           this.category,
           this.publishable,
         ]
