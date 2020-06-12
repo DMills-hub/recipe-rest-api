@@ -31,7 +31,6 @@ exports.save = async (req, res) => {
     const attemptSave = await newRecipe.save();
     res.json(attemptSave);
   } catch (err) {
-    console.log(err);
     res.json(errorMessage);
   }
 };
