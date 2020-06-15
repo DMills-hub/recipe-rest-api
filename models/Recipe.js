@@ -38,6 +38,38 @@ class Recipe {
     this.publishable = publishable;
   }
 
+  static async addIngredient(recipeId, ingredient) {
+    try {
+      const client = await pool.connect();
+      await client.query("INSERT INTO ingredients (recipe_id, ingredient) VALUES ($1, $2)", [recipeId, ingredient]);
+      return { success: true, message: "Added new ingredient" }
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
+  static async updateInstruction(id, instruction) {
+    try {
+      const client = await pool.connect();
+      await client.query("UPDATE instructions SET instruction = $1 WHERE id = $2", [instruction, id]);
+      client.release();
+      return { success: true, message: "Updated instruction" }
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
+  static async updateIngredient(id, ingredient) {
+    try {
+      const client = await pool.connect();
+      await client.query("UPDATE ingredients SET ingredient = $1 WHERE id = $2", [ingredient, id]);
+      client.release();
+      return { success: true, message: "Ingredient updated" }
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
   static async getReviews(recipeId) {
     try {
       const client = await pool.connect();

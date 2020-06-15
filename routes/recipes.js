@@ -25,4 +25,10 @@ router.post("/addReview", isAuth, recipesController.addReview);
 
 router.get("/reviews/:recipeId", isAuth, recipesController.getReviews);
 
+router.post("/updateIngredient", isAuth, recipesController.updateIngredient);
+
+router.post("/updateInstruction", isAuth, recipesController.updateInstruction);
+
+router.post("/addIngredient", isAuth, recipesController.addIngredient);
+
 module.exports = router;

@@ -135,3 +135,34 @@ exports.getReviews = async (req, res) => {
     res.json(errorMessage);
   }
 }
+
+exports.updateIngredient = async (req, res) => {
+  try {
+    const { id, ingredient } = req.body;
+    const updateIngredient = await Recipe.updateIngredient(id, ingredient);
+    res.json(updateIngredient);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
+
+exports.updateInstruction = async (req, res) => {
+  try {
+    const { id, instruction } = req.body;
+    const updateInstruction = await Recipe.updateInstruction(id, instruction);
+    res.json(updateInstruction);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
+
+
+exports.addIngredient = async (req, res) => {
+  try {
+    const { recipeId, ingredient } = req.body;
+    const addIngredient = await Recipe.addIngredient(recipeId, ingredient);
+    res.json(addIngredient);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
