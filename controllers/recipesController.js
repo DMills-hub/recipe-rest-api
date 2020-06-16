@@ -159,9 +159,29 @@ exports.updateInstruction = async (req, res) => {
 
 exports.addIngredient = async (req, res) => {
   try {
-    const { recipeId, ingredient } = req.body;
-    const addIngredient = await Recipe.addIngredient(recipeId, ingredient);
+    const { recipeId, ingredient, id } = req.body;
+    const addIngredient = await Recipe.addIngredient(recipeId, ingredient, id);
     res.json(addIngredient);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
+
+exports.addInstruction = async (req, res) => {
+  try {
+    const { recipeId, instruction, id } = req.body;
+    const addInstruction = await Recipe.addInstruction(recipeId, instruction, id);
+    res.json(addInstruction);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
+
+exports.updateTitle = async (req, res) => {
+  try {
+    const { recipeId, title } = req.body;
+    const updateTitle = await Recipe.updateTitle(recipeId, title);
+    res.json(updateTitle);
   } catch (err) {
     res.json(errorMessage);
   }

@@ -38,11 +38,46 @@ class Recipe {
     this.publishable = publishable;
   }
 
-  static async addIngredient(recipeId, ingredient) {
+  static async updateTitle(recipeId, title) {
     try {
       const client = await pool.connect();
-      await client.query("INSERT INTO ingredients (recipe_id, ingredient) VALUES ($1, $2)", [recipeId, ingredient]);
-      return { success: true, message: "Added new ingredient" }
+      await client.query("UPDATE recipes SET title = $1 WHERE id = $2", [title, recipeId]);
+      client.release();
+      return { success: true, message: "Successfully updated title." };
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
+  static async addInstruction(recipeId, instruction, id) {
+    try {
+      const client = await pool.connect();
+      const findInstruction = await client.query("SELECT id FROM instructions WHERE id = $1", [id]);
+      if (findInstruction.rowCount > 0) {
+        const id = await client.query("UPDATE instructions SET instruction = $1 WHERE id = $2 RETURNING id", [instruction, id]);
+        client.release();
+        return { success: true, message: "Successfully updated ingredient.", id: id.rows[0].id }
+      }
+      const newId = await client.query("INSERT INTO instructions (recipe_id, instruction) VALUES ($1, $2) RETURNING id", [recipeId, instruction]);
+      client.release();
+      return { success: true, message: "Added new ingredient", id: newId.rows[0].id }
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
+  static async addIngredient(recipeId, ingredient, id) {
+    try {
+      const client = await pool.connect();
+      const findIngredient = await client.query("SELECT id FROM ingredients WHERE id = $1", [id]);
+      if (findIngredient.rowCount > 0) {
+        const id = await client.query("UPDATE ingredients SET ingredient = $1 WHERE id = $2 RETURNING id", [ingredient, id]);
+        client.release();
+        return { success: true, message: "Successfully updated ingredient.", id: id.rows[0].id }
+      }
+      const newId = await client.query("INSERT INTO ingredients (recipe_id, ingredient) VALUES ($1, $2) RETURNING id", [recipeId, ingredient]);
+      client.release();
+      return { success: true, message: "Added new ingredient", id: newId.rows[0].id }
     } catch (err) {
       return errorMessage;
     }
@@ -228,6 +263,7 @@ class Recipe {
         "SELECT * FROM reviews WHERE recipe_id = $1 AND user_id = $2",
         [recipeId, userId]
       );
+      const category = await client.query("SELECT category FROM recipes WHERE id = $1", [recipeId]);
       let fav;
       let reviewed;
       if (isFav.rowCount === 0) {
@@ -248,6 +284,7 @@ class Recipe {
         isFav: fav,
         reviews: reviews.rows,
         isReviewed: reviewed,
+        category: category.rows[0].category
       };
     } catch (err) {
       return errorMessage;

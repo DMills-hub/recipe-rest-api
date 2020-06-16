@@ -31,4 +31,8 @@ router.post("/updateInstruction", isAuth, recipesController.updateInstruction);
 
 router.post("/addIngredient", isAuth, recipesController.addIngredient);
 
+router.post("/addInstruction", isAuth, recipesController.addInstruction);
+
+router.post("/updateTitle", isAuth, recipesController.updateTitle);
+
 module.exports = router;
