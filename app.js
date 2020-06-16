@@ -18,4 +18,4 @@ app.use(
 app.use("/auth", authRouter);
 app.use("/recipes", recipesRouter);
 
-app.listen(PORT, "192.168.0.27");
+app.listen(PORT);
