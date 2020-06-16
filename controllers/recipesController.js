@@ -186,3 +186,63 @@ exports.updateTitle = async (req, res) => {
     res.json(errorMessage);
   }
 }
+
+exports.deleteIngredient = async (req, res) => {
+  try {
+    const { id } = req.body;
+    const deleteIngredient = await Recipe.deleteIngredient(id);
+    res.json(deleteIngredient);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
+
+exports.deleteInstruction = async (req, res) => {
+  try {
+    const { id } = req.body;
+    const deleteInstruction = await Recipe.deleteInstruction(id);
+    res.json(deleteInstruction)
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
+
+exports.updatePreptime = async (req, res) => {
+  try {
+    const { recipeId, preptime } = req.body;
+    const updatePreptime = await Recipe.updatePreptime(recipeId, preptime);
+    res.json(updatePreptime);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
+
+exports.updateServing = async (req, res) => {
+  try {
+    const { recipeId, serves } = req.body;
+    const updateServing = await Recipe.updateServing(recipeId, serves);
+    res.json(updateServing);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
+
+exports.updateCooktime = async (req, res) => {
+  try {
+    const { recipeId, cooktime } = req.body;
+    const updateCooktime = await Recipe.updateCooktime(recipeId, cooktime);
+    res.json(updateCooktime);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
+
+exports.updateCategory = async (req, res) => {
+  try {
+    const { recipeId, category } = req.body;
+    const updateCategory = await Recipe.updateCategory(recipeId, category);
+    res.json(updateCategory);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}

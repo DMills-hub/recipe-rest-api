@@ -38,6 +38,84 @@ class Recipe {
     this.publishable = publishable;
   }
 
+
+  static async updateCategory(recipeId, category) {
+    try {
+      const client = await pool.connect();
+      await client.query("UPDATE recipes SET category = $1 WHERE id = $2", [category, recipeId])
+      client.release();
+      return { success: true, message: "Updated category." }
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
+
+  static async updateCooktime(recipeId, cooktime) {
+    try {
+      const client = await pool.connect();
+      await client.query("UPDATE recipes SET cooktime = $1 WHERE id = $2", [cooktime, recipeId]);
+      client.release();
+      return { success: true, message: "Updated cooktime." }
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
+  static async updateServing(recipeId, serving) {
+    try {
+      const client = await pool.connect();
+      await client.query("UPDATE recipes SET serving = $1 WHERE id = $2", [serving, recipeId]);
+      client.release();
+      return { success: true, message: "Updated serving." }
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
+  static async updatePreptime(recipeId, preptime) {
+    try {
+      const client = await pool.connect();
+      await client.query("UPDATE recipes SET preptime = $1 WHERE id = $2", [preptime, recipeId]);
+      client.release();
+      return { success: true, message: "Updated preptime." }
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
+  static async deleteInstruction(id) {
+    try {
+      const client = await pool.connect();
+      const checkInstructionsExists = await client.query("SELECT id FROM instructions WHERE id = $1", [id]);
+      if (checkInstructionsExists.rowCount === 0) {
+        client.release();
+        return { success: true, message: "No instruction was found to delete." };
+      }
+      await client.query("DELETE FROM instructions WHERE id = $1", [id]);
+      client.release();
+      return { success: true, message:  "Deleted instruction." };
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
+  static async deleteIngredient(id) {
+    try {
+      const client = await pool.connect();
+      const checkIngredientExists = await client.query("SELECT id FROM ingredients WHERE id = $1", [id]);
+      if (checkIngredientExists.rowCount === 0) {
+        client.release();
+       return { success: true, message: "No ingredient was found to delete" };
+      }
+      await client.query("DELETE FROM ingredients WHERE id = $1", [id]);
+      client.release();
+      return { success: true, message: "Deleted ingredient." }
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
   static async updateTitle(recipeId, title) {
     try {
       const client = await pool.connect();
@@ -141,7 +219,7 @@ class Recipe {
         "SELECT image FROM recipes WHERE id = $1",
         [recipeId]
       );
-      if (oldImage.rowCount !== 0) {
+      if (oldImage.rows[0].image !== "") {
         const deleteParams = {
           Bucket: BUCKET_NAME,
           Key: oldImage.rows[0].image,
@@ -200,7 +278,7 @@ class Recipe {
     try {
       const client = await pool.connect();
       const myFavourites = await client.query(
-        "SELECT recipes.id, recipes.user_id, recipes.title, recipes.image, recipes.cooktime, recipes.preptime, recipes.serving, recipes.category FROM favourites INNER JOIN recipes ON recipes.id = favourites.recipe_id WHERE favourites.user_id = $1;",
+        "SELECT recipes.id, recipes.user_id, recipes.title, recipes.image, recipes.cooktime, recipes.preptime, recipes.serving, recipes.category FROM favourites INNER JOIN recipes ON recipes.id = favourites.recipe_id WHERE favourites.user_id = $1 ORDER BY favourites.id;",
         [userId]
       );
       client.release();
@@ -295,7 +373,7 @@ class Recipe {
     try {
       const client = await pool.connect();
       const recipes = await client.query(
-        "SELECT * FROM recipes WHERE user_id = $1;",
+        "SELECT * FROM recipes WHERE user_id = $1 ORDER BY id;",
         [userId]
       );
       client.release();
@@ -310,7 +388,7 @@ class Recipe {
     try {
       const client = await pool.connect();
       const results = await client.query(
-        "SELECT * FROM recipes WHERE category = $1 AND publishable = TRUE",
+        "SELECT * FROM recipes WHERE category = $1 AND publishable = TRUE ORDER BY id;",
         [category]
       );
       client.release();
