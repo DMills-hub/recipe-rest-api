@@ -246,3 +246,15 @@ exports.updateCategory = async (req, res) => {
     res.json(errorMessage);
   }
 }
+
+
+exports.searchRecipe = async (req, res) => {
+  try {
+    const { category, title } = req.params;
+    const searchedRecipes = await Recipe.searchedRecipes(category, title);
+    res.json(searchedRecipes);
+  } catch (err) {
+    console.log(err);
+    res.json(errorMessage);
+  }
+}

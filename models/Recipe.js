@@ -38,6 +38,17 @@ class Recipe {
     this.publishable = publishable;
   }
 
+  static async searchedRecipes(category, title) {
+    try {
+      const client = await pool.connect();
+      const searchedRecipes = await client.query(`SELECT * FROM recipes WHERE title LIKE '%${title}%' AND category = $1 AND publishable = TRUE`, [category]);
+      client.release();
+      return { success: true, recipes: searchedRecipes.rows };
+    } catch (err) {
+      console.log(err);
+      return errorMessage;
+    }
+  }
 
   static async updateCategory(recipeId, category) {
     try {
