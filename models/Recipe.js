@@ -41,7 +41,7 @@ class Recipe {
   static async searchedRecipes(category, title) {
     try {
       const client = await pool.connect();
-      const searchedRecipes = await client.query(`SELECT * FROM recipes WHERE title LIKE '%${title}%' AND category = $1 AND publishable = TRUE`, [category]);
+      const searchedRecipes = await client.query(`SELECT * FROM recipes WHERE LOWER(title) LIKE LOWER('%${title}%') AND category = $1 AND publishable = TRUE`, [category]);
       client.release();
       return { success: true, recipes: searchedRecipes.rows };
     } catch (err) {
