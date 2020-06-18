@@ -4,8 +4,11 @@ dotenv.config();
 let pool;
 if (process.env.NODE_ENV === "production") {
   pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
+    user: process.env.DB_PROD_USER,
+    host: process.env.DB_PROD_HOST,
+    database: process.env.DB_PROD_NAME,
+    port: process.env.DB_PROD_PORT,
+    ssl: false,
   });
 } else {
   pool = new Pool({
