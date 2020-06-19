@@ -15,6 +15,10 @@ app.use(
   })
 );
 
+app.get("/", (req, res) => {
+  res.send("Hello!")
+})
+
 app.use("/auth", authRouter);
 app.use("/recipes", recipesRouter);
 
