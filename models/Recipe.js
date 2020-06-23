@@ -38,6 +38,17 @@ class Recipe {
     this.publishable = publishable;
   }
 
+  static async searchMyRecipes(userId, title) {
+    try {
+      const client = await pool.connect();
+      const searchMyRecipes = await client.query(`SELECT * FROM recipes WHERE LOWER(title) LIKE LOWER('%${title}%') AND user_id = $1`, [userId]);
+      client.release();
+      return { success: true, myRecipes: searchMyRecipes.rows }
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
   static async searchedRecipes(category, title) {
     try {
       const client = await pool.connect();
@@ -45,7 +56,6 @@ class Recipe {
       client.release();
       return { success: true, recipes: searchedRecipes.rows };
     } catch (err) {
-      console.log(err);
       return errorMessage;
     }
   }

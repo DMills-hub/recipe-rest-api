@@ -47,6 +47,8 @@ router.post("/updateCooktime", isAuth, recipesController.updateCooktime);
 
 router.post("/updateCategory", isAuth, recipesController.updateCategory);
 
-router.get("/search/:category/:title", recipesController.searchRecipe);
+router.get("/search/:category/:title", isAuth, recipesController.searchRecipe);
+
+router.get("/search/myRecipes/:userId/:title", isAuth, recipesController.searchMyRecipe);
 
 module.exports = router;

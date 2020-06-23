@@ -254,7 +254,16 @@ exports.searchRecipe = async (req, res) => {
     const searchedRecipes = await Recipe.searchedRecipes(category, title);
     res.json(searchedRecipes);
   } catch (err) {
-    console.log(err);
+    res.json(errorMessage);
+  }
+}
+
+exports.searchMyRecipe = async (req, res) => {
+  try {
+    const { userId, title } = req.params;
+    const searchMyRecipes = await Recipe.searchMyRecipes(userId, title);
+    res.json(searchMyRecipes);
+  } catch (err) {
     res.json(errorMessage);
   }
 }
