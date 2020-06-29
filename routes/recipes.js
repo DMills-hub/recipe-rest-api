@@ -25,30 +25,10 @@ router.post("/addReview", isAuth, recipesController.addReview);
 
 router.get("/reviews/:recipeId", isAuth, recipesController.getReviews);
 
-router.post("/updateIngredient", isAuth, recipesController.updateIngredient);
-
-router.post("/updateInstruction", isAuth, recipesController.updateInstruction);
-
-router.post("/addIngredient", isAuth, recipesController.addIngredient);
-
-router.post("/addInstruction", isAuth, recipesController.addInstruction);
-
-router.post("/updateTitle", isAuth, recipesController.updateTitle);
-
-router.post("/deleteIngredient", isAuth, recipesController.deleteIngredient);
-
-router.post("/deleteInstruction", isAuth, recipesController.deleteInstruction);
-
-router.post("/updatePreptime", isAuth, recipesController.updatePreptime);
-
-router.post("/updateServing", isAuth, recipesController.updateServing);
-
-router.post("/updateCooktime", isAuth, recipesController.updateCooktime);
-
-router.post("/updateCategory", isAuth, recipesController.updateCategory);
-
 router.get("/search/:category/:title", isAuth, recipesController.searchRecipe);
 
 router.get("/search/myRecipes/:userId/:title", isAuth, recipesController.searchMyRecipe);
+
+router.post("/updateRecipe", isAuth, recipesController.updateRecipe);
 
 module.exports = router;

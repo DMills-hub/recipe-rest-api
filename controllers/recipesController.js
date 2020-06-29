@@ -146,108 +146,6 @@ exports.updateIngredient = async (req, res) => {
   }
 }
 
-exports.updateInstruction = async (req, res) => {
-  try {
-    const { id, instruction } = req.body;
-    const updateInstruction = await Recipe.updateInstruction(id, instruction);
-    res.json(updateInstruction);
-  } catch (err) {
-    res.json(errorMessage);
-  }
-}
-
-
-exports.addIngredient = async (req, res) => {
-  try {
-    const { recipeId, ingredient, id } = req.body;
-    const addIngredient = await Recipe.addIngredient(recipeId, ingredient, id);
-    res.json(addIngredient);
-  } catch (err) {
-    res.json(errorMessage);
-  }
-}
-
-exports.addInstruction = async (req, res) => {
-  try {
-    const { recipeId, instruction, id } = req.body;
-    const addInstruction = await Recipe.addInstruction(recipeId, instruction, id);
-    res.json(addInstruction);
-  } catch (err) {
-    res.json(errorMessage);
-  }
-}
-
-exports.updateTitle = async (req, res) => {
-  try {
-    const { recipeId, title } = req.body;
-    const updateTitle = await Recipe.updateTitle(recipeId, title);
-    res.json(updateTitle);
-  } catch (err) {
-    res.json(errorMessage);
-  }
-}
-
-exports.deleteIngredient = async (req, res) => {
-  try {
-    const { id } = req.body;
-    const deleteIngredient = await Recipe.deleteIngredient(id);
-    res.json(deleteIngredient);
-  } catch (err) {
-    res.json(errorMessage);
-  }
-}
-
-exports.deleteInstruction = async (req, res) => {
-  try {
-    const { id } = req.body;
-    const deleteInstruction = await Recipe.deleteInstruction(id);
-    res.json(deleteInstruction)
-  } catch (err) {
-    res.json(errorMessage);
-  }
-}
-
-exports.updatePreptime = async (req, res) => {
-  try {
-    const { recipeId, preptime } = req.body;
-    const updatePreptime = await Recipe.updatePreptime(recipeId, preptime);
-    res.json(updatePreptime);
-  } catch (err) {
-    res.json(errorMessage);
-  }
-}
-
-exports.updateServing = async (req, res) => {
-  try {
-    const { recipeId, serves } = req.body;
-    const updateServing = await Recipe.updateServing(recipeId, serves);
-    res.json(updateServing);
-  } catch (err) {
-    res.json(errorMessage);
-  }
-}
-
-exports.updateCooktime = async (req, res) => {
-  try {
-    const { recipeId, cooktime } = req.body;
-    const updateCooktime = await Recipe.updateCooktime(recipeId, cooktime);
-    res.json(updateCooktime);
-  } catch (err) {
-    res.json(errorMessage);
-  }
-}
-
-exports.updateCategory = async (req, res) => {
-  try {
-    const { recipeId, category } = req.body;
-    const updateCategory = await Recipe.updateCategory(recipeId, category);
-    res.json(updateCategory);
-  } catch (err) {
-    res.json(errorMessage);
-  }
-}
-
-
 exports.searchRecipe = async (req, res) => {
   try {
     const { category, title } = req.params;
@@ -263,6 +161,16 @@ exports.searchMyRecipe = async (req, res) => {
     const { userId, title } = req.params;
     const searchMyRecipes = await Recipe.searchMyRecipes(userId, title);
     res.json(searchMyRecipes);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
+
+exports.updateRecipe = async (req, res) => {
+  try {
+    const { title, image, newIngredients, newInstructions, cookTime, prepTime, serves, category, id } = req.body;
+    const updateRecipe = await Recipe.updateRecipe(title, image, newIngredients, newInstructions, cookTime, prepTime, serves, category, id);
+    res.json(updateRecipe);
   } catch (err) {
     res.json(errorMessage);
   }

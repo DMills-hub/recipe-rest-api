@@ -38,6 +38,67 @@ class Recipe {
     this.publishable = publishable;
   }
 
+  static async updateRecipe(title, image, ingredients, instructions, cookTime, prepTime, serves, category, id) {
+    try {
+      const client = await pool.connect();
+      const imageId = uuid();
+      const oldImage = await client.query(
+        "SELECT image FROM recipes WHERE id = $1",
+        [id]
+      );
+      if (oldImage.rows[0].image !== "" && image !== "") {
+        const deleteParams = {
+          Bucket: BUCKET_NAME,
+          Key: oldImage.rows[0].image,
+        };
+        s3.deleteObject(deleteParams, (err) => {
+          if (err) return { error: "Couldn't delete image." };
+        });
+        await client.query("UPDATE recipes SET image = $1 WHERE id = $2", [
+          `${imageId}.jpeg`,
+          id,
+        ]);
+        const fileContent = new Buffer(image, "base64");
+        const params = {
+          Bucket: BUCKET_NAME,
+          Key: `${imageId}.jpeg`,
+          Body: fileContent,
+          ContentEncoding: "base64",
+          ContentType: "image/jpeg",
+        };
+        s3.upload(params, (err) => {
+          if (err) {
+            return err;
+          }
+        });
+      }
+      await client.query("UPDATE recipes SET title = $1, cooktime = $2, preptime = $3, serving = $4, category = $5 WHERE id = $6", [title, cookTime, prepTime, serves, category, id]);
+      await client.query("DELETE FROM ingredients WHERE recipe_id = $1", [id]);
+      await client.query("DELETE FROM instructions WHERE recipe_id = $1", [id]);
+      const newIngredients = ingredients.map((_, index) => {
+        return [id, ingredients[index].ingredient];
+      });
+      const newInstructions = instructions.map((_, index) => {
+        return [id, instructions[index].instruction];
+      });
+      const ingredientsQuery = format(
+        "INSERT INTO ingredients (recipe_id, ingredient) VALUES %L",
+        newIngredients
+      );
+      const instructionsQuery = format(
+        "INSERT INTO instructions (recipe_id, instruction) VALUES %L",
+        newInstructions
+      );
+      await client.query(ingredientsQuery);
+      await client.query(instructionsQuery);
+      client.release();
+      return { success: true, message: "Recipe successfully updated." }
+    } catch (err) {
+      console.log(err);
+      return errorMessage;
+    }
+  }
+
   static async searchMyRecipes(userId, title) {
     try {
       const client = await pool.connect();
@@ -59,151 +120,7 @@ class Recipe {
       return errorMessage;
     }
   }
-
-  static async updateCategory(recipeId, category) {
-    try {
-      const client = await pool.connect();
-      await client.query("UPDATE recipes SET category = $1 WHERE id = $2", [category, recipeId])
-      client.release();
-      return { success: true, message: "Updated category." }
-    } catch (err) {
-      return errorMessage;
-    }
-  }
-
-
-  static async updateCooktime(recipeId, cooktime) {
-    try {
-      const client = await pool.connect();
-      await client.query("UPDATE recipes SET cooktime = $1 WHERE id = $2", [cooktime, recipeId]);
-      client.release();
-      return { success: true, message: "Updated cooktime." }
-    } catch (err) {
-      return errorMessage;
-    }
-  }
-
-  static async updateServing(recipeId, serving) {
-    try {
-      const client = await pool.connect();
-      await client.query("UPDATE recipes SET serving = $1 WHERE id = $2", [serving, recipeId]);
-      client.release();
-      return { success: true, message: "Updated serving." }
-    } catch (err) {
-      return errorMessage;
-    }
-  }
-
-  static async updatePreptime(recipeId, preptime) {
-    try {
-      const client = await pool.connect();
-      await client.query("UPDATE recipes SET preptime = $1 WHERE id = $2", [preptime, recipeId]);
-      client.release();
-      return { success: true, message: "Updated preptime." }
-    } catch (err) {
-      return errorMessage;
-    }
-  }
-
-  static async deleteInstruction(id) {
-    try {
-      const client = await pool.connect();
-      const checkInstructionsExists = await client.query("SELECT id FROM instructions WHERE id = $1", [id]);
-      if (checkInstructionsExists.rowCount === 0) {
-        client.release();
-        return { success: true, message: "No instruction was found to delete." };
-      }
-      await client.query("DELETE FROM instructions WHERE id = $1", [id]);
-      client.release();
-      return { success: true, message:  "Deleted instruction." };
-    } catch (err) {
-      return errorMessage;
-    }
-  }
-
-  static async deleteIngredient(id) {
-    try {
-      const client = await pool.connect();
-      const checkIngredientExists = await client.query("SELECT id FROM ingredients WHERE id = $1", [id]);
-      if (checkIngredientExists.rowCount === 0) {
-        client.release();
-       return { success: true, message: "No ingredient was found to delete" };
-      }
-      await client.query("DELETE FROM ingredients WHERE id = $1", [id]);
-      client.release();
-      return { success: true, message: "Deleted ingredient." }
-    } catch (err) {
-      return errorMessage;
-    }
-  }
-
-  static async updateTitle(recipeId, title) {
-    try {
-      const client = await pool.connect();
-      await client.query("UPDATE recipes SET title = $1 WHERE id = $2", [title, recipeId]);
-      client.release();
-      return { success: true, message: "Successfully updated title." };
-    } catch (err) {
-      return errorMessage;
-    }
-  }
-
-  static async addInstruction(recipeId, instruction, id) {
-    try {
-      const client = await pool.connect();
-      const findInstruction = await client.query("SELECT id FROM instructions WHERE id = $1", [id]);
-      if (findInstruction.rowCount > 0) {
-        const id = await client.query("UPDATE instructions SET instruction = $1 WHERE id = $2 RETURNING id", [instruction, id]);
-        client.release();
-        return { success: true, message: "Successfully updated ingredient.", id: id.rows[0].id }
-      }
-      const newId = await client.query("INSERT INTO instructions (recipe_id, instruction) VALUES ($1, $2) RETURNING id", [recipeId, instruction]);
-      client.release();
-      return { success: true, message: "Added new ingredient", id: newId.rows[0].id }
-    } catch (err) {
-      return errorMessage;
-    }
-  }
-
-  static async addIngredient(recipeId, ingredient, id) {
-    try {
-      const client = await pool.connect();
-      const findIngredient = await client.query("SELECT id FROM ingredients WHERE id = $1", [id]);
-      if (findIngredient.rowCount > 0) {
-        const id = await client.query("UPDATE ingredients SET ingredient = $1 WHERE id = $2 RETURNING id", [ingredient, id]);
-        client.release();
-        return { success: true, message: "Successfully updated ingredient.", id: id.rows[0].id }
-      }
-      const newId = await client.query("INSERT INTO ingredients (recipe_id, ingredient) VALUES ($1, $2) RETURNING id", [recipeId, ingredient]);
-      client.release();
-      return { success: true, message: "Added new ingredient", id: newId.rows[0].id }
-    } catch (err) {
-      return errorMessage;
-    }
-  }
-
-  static async updateInstruction(id, instruction) {
-    try {
-      const client = await pool.connect();
-      await client.query("UPDATE instructions SET instruction = $1 WHERE id = $2", [instruction, id]);
-      client.release();
-      return { success: true, message: "Updated instruction" }
-    } catch (err) {
-      return errorMessage;
-    }
-  }
-
-  static async updateIngredient(id, ingredient) {
-    try {
-      const client = await pool.connect();
-      await client.query("UPDATE ingredients SET ingredient = $1 WHERE id = $2", [ingredient, id]);
-      client.release();
-      return { success: true, message: "Ingredient updated" }
-    } catch (err) {
-      return errorMessage;
-    }
-  }
-
+  
   static async getReviews(recipeId) {
     try {
       const client = await pool.connect();
@@ -341,11 +258,11 @@ class Recipe {
     try {
       const client = await pool.connect();
       const ingredients = await client.query(
-        "SELECT id, ingredient FROM ingredients WHERE recipe_id = $1",
+        "SELECT id, ingredient FROM ingredients WHERE recipe_id = $1 ORDER BY id",
         [recipeId]
       );
       const instructions = await client.query(
-        "SELECT id, instruction FROM instructions WHERE recipe_id = $1",
+        "SELECT id, instruction FROM instructions WHERE recipe_id = $1 ORDER BY id",
         [recipeId]
       );
       if (ingredients.rowCount === 0 || instructions.rowCount === 0)
@@ -355,7 +272,7 @@ class Recipe {
         [userId, recipeId]
       );
       const reviews = await client.query(
-        "SELECT * FROM reviews WHERE recipe_id = $1",
+        "SELECT * FROM reviews WHERE recipe_id = $1 ORDER BY id",
         [recipeId]
       );
       const isReviewed = await client.query(
