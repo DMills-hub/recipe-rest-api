@@ -11,4 +11,6 @@ router.get("/account/:userId", isAuth, authController.getAccount);
 
 router.post("/changePassword", isAuth, authController.changePassword);
 
+router.post("/resetPassword", authController.resetPassword);
+
 module.exports = router;

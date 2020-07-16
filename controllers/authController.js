@@ -49,3 +49,13 @@ exports.changePassword = async (req, res) => {
     res.json(errorMessage);
   }
 }
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const sendResetEmail = await User.resetPassword(email);
+    res.json(sendResetEmail);
+  } catch (err) {
+    res.json(errorMessage);
+  }
+}
