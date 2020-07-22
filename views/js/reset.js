@@ -10,7 +10,7 @@ form.addEventListener("submit", async (e) => {
     return (error.innerText = "Please make sure the passwords match.");
 
   try {
-    const request = await fetch(`http://192.168.0.51:5000/auth/reset/${token}`, {
+    const request = await fetch(`https://recipeandme.online/auth/reset/${token}`, {
       headers: {
         "Authorization": token,
         'Content-Type': 'application/json'
