@@ -14,6 +14,17 @@ class User {
     this.password = password;
   }
 
+  static async passwordReset(password, id) {
+    try {
+      const client = await pool.connect();
+      await client.query("UPDATE users SET password = $1 WHERE id = $2", [password, id]);
+      client.release();
+      return {success: true, message: "Successfully changed your password."};
+    } catch (err) {
+      return errorMessage;
+    }
+  }
+
   static async resetPassword(emailAddress) {
     try {
       const client = await pool.connect();

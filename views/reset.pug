@@ -1,0 +1,18 @@
+head
+    include ./head.pug
+body
+    include ./header.pug
+    div(class="ResetContainer")
+        form(id="ResetForm")
+            div(class="ResetFormSubContainer")
+                label Password
+                br
+                input(type="password" id="password")
+            div(class="ResetFormSubContainer")
+                label Confirm Password
+                br
+                input(type="password" id="confirmPassword")
+            input(type="hidden" value=token id="token")
+            button(type="submit") Submit
+            p(id="error")
+    script(src="/js/reset.js")

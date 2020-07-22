@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const SALT = 12;
 const User = require("../models/User");
-const errorMessage = require('../helpers/errorMessage');
+const errorMessage = require("../helpers/errorMessage");
 
 exports.register = async (req, res) => {
   const { username, email, password, confirmPassword } = req.body;
@@ -35,7 +35,7 @@ exports.getAccount = async (req, res) => {
     const user = await User.getAccount(userId);
     res.json(user);
   } catch (err) {
-    res.json(errorMessage)
+    res.json(errorMessage);
   }
 };
 
@@ -48,7 +48,7 @@ exports.changePassword = async (req, res) => {
   } catch (err) {
     res.json(errorMessage);
   }
-}
+};
 
 exports.resetPassword = async (req, res) => {
   try {
@@ -58,4 +58,19 @@ exports.resetPassword = async (req, res) => {
   } catch (err) {
     res.json(errorMessage);
   }
-}
+};
+
+exports.resetPasswordWithToken = (req, res) => {
+  res.render("reset", { token: req.params.token });
+};
+
+exports.passwordReset = async (req, res) => {
+  try {
+    const { password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, SALT);
+    const resetPassword = await User.passwordReset(hashedPassword, req.userId);
+    res.json(resetPassword.message);
+  } catch (err) {
+    res.json(errorMessage.error);
+  }
+};

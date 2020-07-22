@@ -9,6 +9,7 @@ module.exports = (req, res, next) => {
   }
   const verify = jwt.verify(token, process.env.SECRET_KEY);
   if (verify.userId) {
+    req.userId = verify.userId;
     return next();
   }
   res.json({error: "You are not authorized to make this request"});

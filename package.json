@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "start": "nodemon app.js"
   },
   "author": "Daniel Mills",
   "license": "ISC",
@@ -20,6 +20,7 @@
     "nodemailer": "^6.4.10",
     "pg": "^8.2.1",
     "pg-format": "^1.0.4",
+    "pug": "^3.0.0",
     "uuidv4": "^6.1.0"
   },
   "devDependencies": {
