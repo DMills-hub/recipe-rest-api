@@ -20,7 +20,7 @@
     "nodemailer": "^6.4.10",
     "pg": "^8.2.1",
     "pg-format": "^1.0.4",
-    "pug": "^3.0.0",
+    "pug": "^3.0.1",
     "uuidv4": "^6.1.0"
   },
   "devDependencies": {
